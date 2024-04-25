@@ -1,5 +1,5 @@
 library(shiny)
-library(readr)  # For reading CSV files
+library(readr)
 library(lubridate)
 library(shinythemes)
 library(DT)
@@ -7,13 +7,11 @@ library(DT)
 # Define UI for application
 ui <- fluidPage(
   theme = shinytheme("cerulean"),
-  
   titlePanel("Rising items from Loughborough University's Research Repository"),
-  
   HTML("<p>This widget was created by Lara Skelly for Loughborough University. It pulls the number of unique downloads from IRUS over a three-month period. </p>",
-        "<p>You should specify the end of this three-month period by selecting any day in that month from the selector below. Note that you will not be able to select the current month as it hasn't finished yet. You should also select the minimum total downloads for the three-month period and the percentage increase. </p>", 
+       "<p>You should specify the end of this three-month period by selecting any day in that month from the selector below. Note that you will not be able to select the current month as it hasn't finished yet. You should also select the minimum total downloads for the three-month period and the percentage increase. </p>",
+       "<p>The code for this app can be found at <a href='https://github.com/lboro-rdm/RisingItems.git'>GitHub</a>.</p>",
        "<p>With thanks to David Campling for inspiring the idea, and ChatGPT for the coding coaching."),
-  
   sidebarLayout(
     sidebarPanel(
       dateInput("selected_date", label = "Select a day:",
@@ -24,9 +22,15 @@ ui <- fluidPage(
                   min = 1, max = 100, value = 20),
       sliderInput("increase", "Percentage increase:",
                   min = 1, max = 100, value = 20),
+      checkboxGroupInput("item_types", "Select Item Types:",
+                         choices = c("All", "Article", "Book", "Book Section",
+                                     "Conference Item", "Dataset", "Image",
+                                     "Music/Musical Composition",
+                                     "Performance", "Report", "Software",
+                                     "Text", "Thesis or Dissertation","Other"),
+                         selected = "All"),
       downloadButton("download_csv", "Download CSV")
     ),
-    
     mainPanel(
       uiOutput("items_title")
     )
@@ -39,17 +43,15 @@ server <- function(input, output) {
   file_url <- reactive({
     # Get the selected date from input
     selected_date <- input$selected_date
-    
     # Calculate the starting point as 3 months before the selected date
     start_date <- selected_date %m-% months(2)
     formatted_start_date <- format(start_date, "%b+%Y")
     formatted_date <- format(selected_date, "%b+%Y")
     
     # Stitch the formatted start date and end date into the file_url
-    file_url <- paste0("https://irus.jisc.ac.uk/r5/report/item/irus_ir_master/?sort_column=Reporting_Period_Total&sort_order=DESC&begin_date=", 
-                       formatted_start_date, "&end_date=", formatted_date, 
+    file_url <- paste0("https://irus.jisc.ac.uk/r5/report/item/irus_ir_master/?sort_column=Reporting_Period_Total&sort_order=DESC&begin_date=",
+                       formatted_start_date, "&end_date=", formatted_date,
                        "&items=100&report_requested=1&institution%5B0%5D=2&repository%5B0%5D=2&access_method%5B0%5D=1&access_type%5B0%5D=4&data_type%5B0%5D=12&item_type%5B0%5D=23&item_type%5B1%5D=0&item_type%5B2%5D=26&item_type%5B3%5D=1&item_type%5B4%5D=2&item_type%5B5%5D=3&item_type%5B6%5D=4&item_type%5B7%5D=5&item_type%5B8%5D=30&item_type%5B9%5D=6&item_type%5B10%5D=7&item_type%5B11%5D=28&item_type%5B12%5D=8&item_type%5B13%5D=9&item_type%5B14%5D=22&item_type%5B15%5D=10&item_type%5B16%5D=25&item_type%5B17%5D=27&item_type%5B18%5D=11&item_type%5B19%5D=12&item_type%5B20%5D=13&item_type%5B21%5D=14&item_type%5B22%5D=15&item_type%5B23%5D=16&item_type%5B24%5D=17&item_type%5B25%5D=18&item_type%5B26%5D=24&item_type%5B27%5D=29&item_type%5B28%5D=19&item_type%5B29%5D=20&item_type%5B30%5D=21&metric_type%5B0%5D=10&output%5B0%5D=13&format=csv")
-    
     return(file_url)
   })
   
@@ -63,7 +65,6 @@ server <- function(input, output) {
     
     # Set column names
     colnames(data) <- c("Item", "URI", "Item_Type", "Metric_Type", "Reporting_Period_Total", "m1", "m2", "m3")
-    
     return(data)
   })
   
@@ -71,14 +72,17 @@ server <- function(input, output) {
   output$items_title <- renderUI({
     # Get the filtered data
     data_filtered <- data()
-    
+    # Filter by selected item types
+    if ("All" %in% input$item_types) {
+      # Do nothing, keep all data
+    } else {
+      data_filtered <- data_filtered[data_filtered$Item_Type %in% input$item_types, ]
+    }
     # Calculate the percentage increase for each item from January to February and from February to March
     increase_m1_to_m2 <- ifelse(data_filtered$m1 == 0, NA, ((data_filtered$m2 - data_filtered$m1) / data_filtered$m1) * 100)
     increase_m2_to_m3 <- ifelse(data_filtered$m2 == 0, NA, ((data_filtered$m3 - data_filtered$m2) / data_filtered$m2) * 100)
     
-    data_filtered <- data_filtered[data_filtered$Reporting_Period_Total >= input$reporting_period & 
-                                     increase_m1_to_m2 >= input$increase & 
-                                     increase_m2_to_m3 >= input$increase, ]
+    data_filtered <- data_filtered[data_filtered$Reporting_Period_Total >= input$reporting_period & increase_m1_to_m2 >= input$increase & increase_m2_to_m3 >= input$increase, ]
     
     data_filtered <- na.omit(data_filtered)
     
