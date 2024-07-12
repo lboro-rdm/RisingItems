@@ -26,6 +26,9 @@ fluidPage(
                                               "Performance", "Report", "Software",
                                               "Text", "Thesis or Dissertation","Other"),
                                   selected = "All"),
+               selectInput("country", "Select Country:",
+                           choices = country_choices,
+                           selected = "All"),
                downloadButton("download_csv", "Download CSV")
         )
       ),
@@ -39,7 +42,7 @@ fluidPage(
                     "<p style='font-size: 10px;' >With thanks to David Campling for inspiring the idea, and ChatGPT for the coding coaching. </p>"),
         ))),
     mainPanel(
-      uiOutput("items_title")
+      uiOutput("items_title") %>% withSpinner()
     )
   )
 )

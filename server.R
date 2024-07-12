@@ -1,48 +1,40 @@
 function(input, output, session) {
-  # Reactive expression for calculating the file_url
-  file_url <- reactive({
-    # Get the selected date from input
-    selected_date <- input$selected_date
-    # Calculate the starting point as 3 months before the selected date
-    start_date <- selected_date %m-% months(2)
-    formatted_start_date <- format(start_date, "%b+%Y")
-    formatted_date <- format(selected_date, "%b+%Y")
   
-    # Stitch the formatted start date and end date into the file_url
-    file_url <- paste0("https://irus.jisc.ac.uk/r5/report/item/irus_ir_master/?sort_column=Reporting_Period_Total&sort_order=DESC&begin_date=",
-                       formatted_start_date, "&end_date=", formatted_date,
-                       "&items=100&report_requested=1&institution%5B0%5D=2&repository%5B0%5D=2&access_method%5B0%5D=1&access_type%5B0%5D=4&data_type%5B0%5D=12&item_type%5B0%5D=23&item_type%5B1%5D=0&item_type%5B2%5D=26&item_type%5B3%5D=1&item_type%5B4%5D=2&item_type%5B5%5D=3&item_type%5B6%5D=4&item_type%5B7%5D=5&item_type%5B8%5D=30&item_type%5B9%5D=6&item_type%5B10%5D=7&item_type%5B11%5D=28&item_type%5B12%5D=8&item_type%5B13%5D=9&item_type%5B14%5D=22&item_type%5B15%5D=10&item_type%5B16%5D=25&item_type%5B17%5D=27&item_type%5B18%5D=11&item_type%5B19%5D=12&item_type%5B20%5D=13&item_type%5B21%5D=14&item_type%5B22%5D=15&item_type%5B23%5D=16&item_type%5B24%5D=17&item_type%5B25%5D=18&item_type%5B26%5D=24&item_type%5B27%5D=29&item_type%5B28%5D=19&item_type%5B29%5D=20&item_type%5B30%5D=21&metric_type%5B0%5D=10&output%5B0%5D=13&format=json")
+  data_reactive <- eventReactive(list(input$selected_date, input$country), {
+    formatted_start_date <- format(as.Date(input$selected_date) - months(2), "%b+%Y")
+    formatted_date <- format(as.Date(input$selected_date), "%b+%Y")
+    country_code <- if (input$country == "All") {
+      ""
+    } else {
+      countrycode(input$country, "country.name", "iso2c")
+    }
+
+    file_url <- if (input$country == "All") {
+      paste0("https://irus.jisc.ac.uk/r5/report/item/irus_ir_master/?sort_column=Reporting_Period_Total&sort_order=DESC&begin_date=",
+             formatted_start_date, "&end_date=", formatted_date,
+             "&items=100&report_requested=1&institution%5B0%5D=2&repository%5B0%5D=2&access_method%5B0%5D=1&access_type%5B0%5D=4&data_type%5B0%5D=12&item_type%5B0%5D=23&item_type%5B1%5D=0&item_type%5B2%5D=26&item_type%5B3%5D=1&item_type%5B4%5D=2&item_type%5B5%5D=3&item_type%5B6%5D=4&item_type%5B7%5D=5&item_type%5B8%5D=30&item_type%5B9%5D=6&item_type%5B10%5D=7&item_type%5B11%5D=28&item_type%5B12%5D=8&item_type%5B13%5D=9&item_type%5B14%5D=22&item_type%5B15%5D=10&item_type%5B16%5D=25&item_type%5B17%5D=27&item_type%5B18%5D=11&item_type%5B19%5D=12&item_type%5B20%5D=13&item_type%5B21%5D=14&item_type%5B22%5D=15&item_type%5B23%5D=16&item_type%5B24%5D=17&item_type%5B25%5D=18&item_type%5B26%5D=24&item_type%5B27%5D=29&item_type%5B28%5D=19&item_type%5B29%5D=20&item_type%5B30%5D=21&metric_type%5B0%5D=10&output%5B0%5D=13&format=json")
+    } else {
+      paste0("https://irus.jisc.ac.uk/r5/report/item/irus_ir_master/?sort_column=Reporting_Period_Total&sort_order=DESC&begin_date=",
+             formatted_start_date, "&end_date=", formatted_date,
+             "&items=100&report_requested=1&institution%5B0%5D=2&repository%5B0%5D=2&country%5B0%5D=", country_code,
+             "&access_method%5B0%5D=1&access_type%5B0%5D=4&data_type%5B0%5D=12&item_type%5B0%5D=23&item_type%5B1%5D=0&item_type%5B2%5D=26&item_type%5B3%5D=1&item_type%5B4%5D=2&item_type%5B5%5D=3&item_type%5B6%5D=4&item_type%5B7%5D=5&item_type%5B8%5D=30&item_type%5B9%5D=6&item_type%5B10%5D=7&item_type%5B11%5D=28&item_type%5B12%5D=8&item_type%5B13%5D=9&item_type%5B14%5D=22&item_type%5B15%5D=10&item_type%5B16%5D=25&item_type%5B17%5D=27&item_type%5B18%5D=11&item_type%5B19%5D=12&item_type%5B20%5D=13&item_type%5B21%5D=14&item_type%5B22%5D=15&item_type%5B23%5D=16&item_type%5B24%5D=17&item_type%5B25%5D=18&item_type%5B26%5D=24&item_type%5B27%5D=29&item_type%5B28%5D=19&item_type%5B29%5D=20&item_type%5B30%5D=21&metric_type%5B0%5D=10&output%5B0%5D=13&format=json")
+    }
+
     
-    IRUS_data <- fromJSON(file_url)
+    # Make the GET request
+    response <- fromJSON(file_url)
     
-    IRUS_df <- IRUS_data$Statistics
-    
+    IRUS_df <- response$Statistics
     names(IRUS_df)[6:8] <- c("m1", "m2", "m3")
-    
-    return(IRUS_df)
-  })
-  
-  # Reactive expression for calculating the csv_file_url
-  csv_file_url <- reactive({
-    # Get the selected date from input
-    selected_date <- input$selected_date
-    # Calculate the starting point as 3 months before the selected date
-    start_date <- selected_date %m-% months(2)
-    formatted_start_date <- format(start_date, "%b+%Y")
-    formatted_date <- format(selected_date, "%b+%Y")
-    
-    # Stitch the formatted start date and end date into the file_url
-    csv_file_url <- paste0("https://irus.jisc.ac.uk/r5/report/item/irus_ir_master/?sort_column=Reporting_Period_Total&sort_order=DESC&begin_date=",
-                       formatted_start_date, "&end_date=", formatted_date,
-                       "&items=100&report_requested=1&institution%5B0%5D=2&repository%5B0%5D=2&access_method%5B0%5D=1&access_type%5B0%5D=4&data_type%5B0%5D=12&item_type%5B0%5D=23&item_type%5B1%5D=0&item_type%5B2%5D=26&item_type%5B3%5D=1&item_type%5B4%5D=2&item_type%5B5%5D=3&item_type%5B6%5D=4&item_type%5B7%5D=5&item_type%5B8%5D=30&item_type%5B9%5D=6&item_type%5B10%5D=7&item_type%5B11%5D=28&item_type%5B12%5D=8&item_type%5B13%5D=9&item_type%5B14%5D=22&item_type%5B15%5D=10&item_type%5B16%5D=25&item_type%5B17%5D=27&item_type%5B18%5D=11&item_type%5B19%5D=12&item_type%5B20%5D=13&item_type%5B21%5D=14&item_type%5B22%5D=15&item_type%5B23%5D=16&item_type%5B24%5D=17&item_type%5B25%5D=18&item_type%5B26%5D=24&item_type%5B27%5D=29&item_type%5B28%5D=19&item_type%5B29%5D=20&item_type%5B30%5D=21&metric_type%5B0%5D=10&output%5B0%5D=13&format=csv")
-    return(csv_file_url)
-  })
-  
+    IRUS_df$m1 <- as.numeric(IRUS_df$m1)
+    IRUS_df$m2 <- as.numeric(IRUS_df$m2)
+    IRUS_df$m3 <- as.numeric(IRUS_df$m3)
+        return(IRUS_df)
+})
   # Reactive expression for downloading and processing CSV data
   data <- reactive({
-    # Download the CSV file from the stitched file_url
-    download.file(csv_file_url(), destfile = "IRUS.csv")
-    return(data)
+    IRUS_df <- data_reactive()
+    return(IRUS_df)
   })
   
   # Define the reactive expression for filtering data and rendering UI
@@ -63,17 +55,22 @@ function(input, output, session) {
     
     data_filtered <- na.omit(data_filtered)
     
-    # Create hyperlinked titles
-    titles <- lapply(data_filtered$Item, function(item) {
-      tags$a(href = data_filtered[data_filtered$Item == item, "URI"], target = "_blank", item)
-    })
-    
-    # Display titles as a list
-    tags$ul(
-      lapply(titles, function(title) {
-        tags$li(title)
+    # If no items match the criteria, show a message
+    if (nrow(data_filtered) == 0) {
+      tags$p("There are no items with these parameters.", style = "font-weight: bold;")
+    } else {
+      # Create hyperlinked titles
+      titles <- lapply(data_filtered$Item, function(item) {
+        tags$a(href = data_filtered[data_filtered$Item == item, "URI"], target = "_blank", item)
       })
-    )
+      
+      # Display titles as a list
+      tags$ul(
+        lapply(titles, function(title) {
+          tags$li(title)
+        })
+      )
+    }
   })
   
   # Function to generate CSV file
