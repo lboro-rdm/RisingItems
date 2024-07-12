@@ -1,3 +1,11 @@
+library(shiny)
+library(shinythemes)
+library(lubridate)
+library(countrycode)
+
+# Get country names and their ISO 3166 Alpha-2 codes
+country_choices <- c("All", countrycode::codelist$country.name.en)
+
 fluidPage(
   theme = shinytheme("cerulean"),
   titlePanel("Rising items from Loughborough University's Research Repository"),
@@ -26,6 +34,9 @@ fluidPage(
                                               "Performance", "Report", "Software",
                                               "Text", "Thesis or Dissertation","Other"),
                                   selected = "All"),
+               selectInput("country", "Select Country:",
+                           choices = country_choices,
+                           selected = "All"),
                downloadButton("download_csv", "Download CSV")
         )
       ),
