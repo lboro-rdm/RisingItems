@@ -1,11 +1,3 @@
-library(shiny)
-library(shinythemes)
-library(lubridate)
-library(countrycode)
-
-# Get country names and their ISO 3166 Alpha-2 codes
-country_choices <- c("All", countrycode::codelist$country.name.en)
-
 fluidPage(
   theme = shinytheme("cerulean"),
   titlePanel("Rising items from Loughborough University's Research Repository"),
@@ -50,7 +42,7 @@ fluidPage(
                     "<p style='font-size: 10px;' >With thanks to David Campling for inspiring the idea, and ChatGPT for the coding coaching. </p>"),
         ))),
     mainPanel(
-      uiOutput("items_title")
+      uiOutput("items_title") %>% withSpinner()
     )
   )
 )
