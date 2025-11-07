@@ -5,7 +5,7 @@ account: research-data-lboro
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 11795642
-bundleId: 8857143
+bundleId: 11144680
 url: https://research-data-lboro.shinyapps.io/LboroRepoRisingItems/
 version: 1
 asMultiple: FALSE
